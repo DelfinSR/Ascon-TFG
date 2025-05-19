@@ -1,0 +1,767 @@
+body, body input, body textarea, body button{
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #FFFDED;
+    border: none;
+}
+
+.img_big {
+    width:60vw;
+}
+
+.img_medium {
+    width:40vw;
+}
+
+table {
+    border:5px solid #352208;
+    border-collapse: collapse;
+}
+
+th{
+    background-color: #FFB17A;
+}
+
+th, td {
+    border:3px solid #352208;
+    border-collapse: collapse;
+    padding:1rem;
+    text-align: center;
+}
+
+.link_volver_indice {
+    position:fixed;
+    right: 2rem;
+    top:2rem;
+    font-weight: 900;
+    font-size: 1.5rem;
+}
+
+.link_volver_indice:link, .link_volver_indice:visited {
+    color: #FFB17A;
+    background-color: #352208;
+    padding:1rem;
+    border-radius: 100px;
+    text-decoration: none;
+}
+
+.presentation {
+    text-align: center;
+    width: 80vw;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.presentation h1 {
+    font-size: 8rem;
+    margin-bottom: 0;
+    font-weight: 900;
+    letter-spacing: 1rem;
+}
+
+.indice {
+    text-align: center;
+    width: 40%;
+}
+
+.indice h4 {
+    margin-bottom: 0;
+    text-decoration: underline;
+}
+
+.indice-list {
+    margin-top: 0.2rem;
+    list-style:lower-greek;
+}
+
+.indice a:link, .indice a:visited, .indice ul, .indice li{
+    text-align: center;
+    color: #FFB17A;
+}
+
+.container {
+    background-color: #FFB17A;
+    padding:1rem 4rem 2rem 4rem;
+    border-radius: 50px;
+    width:70vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.container h2 {
+    /*letter-spacing: 0.6rem;*/
+    text-decoration: underline;
+    
+}
+
+.container_content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.container_values {
+    max-width: 50rem;
+}
+
+.container_values div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.container_values .container_label {
+    width: 7rem;
+    padding-right: 1rem;
+    margin-right: 1rem;
+}
+
+.container_values .label_number_input {
+    width: 14rem;
+    padding-right: 1rem;
+    margin-right: 1rem;
+}
+
+.label_number_input_small {
+    margin-right: 1rem;
+}
+
+.container_values .label_number_input_small {
+    width: 1rem;
+    padding-right: 0.3rem;
+}
+
+.container_values input {
+    margin-left: 1rem;
+    padding: 1rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+}
+
+.container_values input[type=number] {
+    margin-left: 1rem;
+    padding: 1rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    width:20%;
+}
+
+.container_values input.sbox_input {
+    /*margin-left: 1rem;*/
+    margin-left:0;
+    padding: 1rem;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    width:25%;
+}
+
+#constants-layer div .sbox_input {
+    /*padding-right:0;*/
+    width: 20%;
+}
+
+#constants-layer div .container_label {
+    /*padding-right:0;*/
+    width:8rem;
+}
+
+#sbox-layer div .label_number_input_small {
+    margin-right:1.5rem;
+}
+
+#lin-layer div .sbox_input {
+    padding-right:0;
+    width: 20%;
+}
+
+.container_wrapper div {
+    width: 7rem;
+}
+
+.container_wrapper div.container_wrapper_div_larger {
+    width: 15rem;
+    margin-right:1rem;
+}
+
+
+
+.container_values button, .encrypted button {
+    font-size: 1rem;
+    padding: .5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: none;
+    margin-left:1rem;
+    border-radius: 50px;
+    background-color:#352208;
+    color: #FFFDED;
+    font-weight: 900;
+}
+
+.container_values button:hover, .encrypted button:hover {
+    cursor: pointer;
+}
+
+.container input, .container textarea{
+    border-radius: 10px;
+    font-size: 1.5rem;
+}
+
+.encrypted textarea{
+    padding: 1rem;
+    margin-top:1rem;
+    width:30rem;
+    height: 10rem;
+    margin-bottom: 1rem;
+}
+
+.container_values textarea {
+    padding: 1rem;
+    margin-top:1rem;
+    width:20rem;
+    height: 7rem;
+    margin-bottom: 1rem;
+}
+
+
+.textarea-explain_random_choose {
+    border: 4px solid #FFB17A;
+    padding:1rem;
+    border-radius:50px;
+    width:16rem;
+    word-break: break-all;
+}
+
+
+.explain {
+    width:70vw;
+    margin-top: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.explain h1 {
+    font-size: 3rem;
+}
+
+.demostracion_aead{
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    margin:1rem;
+    padding:2rem;
+}
+
+.demostracion_aead button{
+    font-size: 1.4rem;
+    padding: .5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: none;
+    margin-left:1rem;
+    border-radius: 50px;
+    background-color:#352208;
+    color: #FFFDED;
+    font-weight: 900;
+}
+
+.explain_random button{
+    font-size: 1.4rem;
+    padding: .5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: none;
+    margin-left:1rem;
+    border-radius: 50px;
+    background-color:#352208;
+    color: #FFFDED;
+    font-weight: 900;
+}
+
+.container_values .estado_interno_botones{
+    display:flex;
+    flex-direction: row; 
+    justify-content: center;
+    align-items: center;
+    gap:6px;
+    flex-wrap: wrap;
+    max-height: 7rem;
+}
+
+.container_values .estado_interno_botones button{
+    margin-left: 0;
+}
+
+@media only screen and (max-width: 1000px) and (orientation: landscape){
+
+    #constants-layer div {
+        width: 15rem;
+    }
+
+    #sbox-layer div {
+        width: 7rem;
+    }
+
+    #lin-layer div {
+        width: 15rem;
+    }
+
+    .presentation h1 {
+        font-size: 4rem;
+        letter-spacing: 0.5rem;
+        margin-top: 5rem;
+    }
+    .overflow_container {
+        width: 100%;
+        overflow-x: scroll;
+        text-align: center;
+    }
+
+    .img_big {
+        width:70rem;
+    }
+    
+    .img_medium {
+        width:40rem;
+    }
+
+    .img_small {
+        width:30rem;
+    }
+
+    .explain h2,.explain h1{
+        text-align: center;
+        margin-bottom: 0.1rem;
+    }
+
+    .explain{
+        width: 80vw;
+        max-width: 90vw;
+        overflow-x: hidden;
+        margin-top:0;
+    }
+
+    .indice{
+        width:100vw;
+    }
+
+    .indice ul {
+        text-align: left;
+        color:black;
+        padding: 0;
+    }
+
+    .encrypted textarea {
+        width: 80%;
+    }
+
+    .explain_modes {
+        width: 100vw;
+        overflow-x: scroll;
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content:start;
+    }
+    .explain_modes table {
+        justify-content:start;
+        width: 100vw;
+        overflow-x: scroll;
+    }
+
+    .container h2 {
+        width:100%;
+        font-size: 2.2rem;
+        text-align: center;
+    }
+
+    .container_values {
+        width: 100%;
+        max-width: 90vw;
+    }
+
+    .container_values input {
+        margin: 0;
+        padding: 1rem;
+        padding-top: .5rem;
+        padding-bottom: .5rem;
+        max-width: 70%;
+    }
+
+    .container {
+        padding:1rem 0 2rem 0;
+        border-radius: 0;
+        width:100vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.4rem;
+    }
+
+    #prueba_ascon-128 div, #key-length-display-demostracion-estado-interno, #hash-length-display-demostracion-estado-interno, #funcion_de_ronda_num_rondas {
+        flex-wrap: nowrap;
+    }
+
+    .container_values div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap:10px;
+        margin-bottom: 1rem;
+        margin-left:2rem;
+        width:100%;
+    }
+
+    .demostracion_aead{
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+        margin:1rem;
+        padding:2rem;
+        gap:15px;
+    }
+
+    .container_values .estado_interno_botones{
+        align-items: center;
+        justify-content: center;
+        margin:0;
+        margin-bottom: 1rem;
+        padding: 0;
+        max-height: 7rem;
+    }
+
+    .container_values .label_number_input {
+        margin:0;
+        padding: 0;
+    }
+
+    .container_values .label_number_input_small {
+        width: auto;
+        padding-right: 0.3rem;
+    }
+
+    .container_wrapper div.container_wrapper_div_larger {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 1rem;
+        width:auto;
+        margin:auto;
+    }
+
+    .container_values .container_label {
+        width: 10rem;
+        text-align: center;
+        padding:0;
+        margin:0;
+    }
+
+    #lin-layer div .container_label {
+        padding-right:0;
+        width: 8rem;
+    }
+
+    #sbox-layer div .label_number_input_small {
+        margin-right:0;
+        width:8rem;
+    }
+
+    #sbox-layer div input.sbox_input {
+        width:15%;
+    }
+
+    #sbox-layer div .label_number_input_small {
+        width:auto;
+    }
+
+    .container_values h2 {
+        margin-bottom: 0;
+    }
+
+    .container_content .encrypted {
+        width:100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container_content {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container button {
+        font-size:1rem;
+    }
+
+    .container textarea, .container input{
+        font-size: 1.4rem;
+    }
+
+    body, body input, body textarea, body button{
+        font-size: 1.4rem;
+    }
+
+    .demostracion_aead button {
+        font-size: 1.2rem;
+    }
+
+    .explain_random button{
+        margin-top:2rem;
+        font-size: 1.2rem;
+    }
+
+    .container button {
+        font-size:1rem;
+    }
+}
+
+@media only screen and (max-width: 700px) {
+    body, body input, body textarea, body button{
+        font-size: 1.3rem;
+    }
+    .presentation h1 {
+        font-size: 3.4rem;
+        letter-spacing: 0.2rem;
+        margin-top: 5rem;
+    }
+    .overflow_container {
+        width: 100%;
+        overflow-x: scroll;
+    }
+
+    .img_big {
+        width:70rem;
+    }
+    
+    .img_medium {
+        width:40rem;
+    }
+
+    .img_small {
+        width:25rem;
+    }
+
+    .explain h2, .explain h1{
+        text-align: center;
+        margin-bottom: 0.1rem;
+    }
+
+    .explain h1 {
+        font-size: 2.5rem;
+        margin-top:2rem;
+    }
+
+    .explain{
+        width: 80vw;
+        max-width: 90vw;
+        overflow-x: hidden;
+        margin-top:0;
+        text-align: justify;
+    }
+
+    .link_volver_indice{
+        text-align: center;
+        font-size: 1.2rem;
+    }
+
+    .indice{
+        width:100vw;
+    }
+
+    .indice ul {
+        text-align: left;
+        color:black;
+        padding: 0;
+    }
+
+    .encrypted textarea {
+        width: 20rem;
+    }
+
+    .container button {
+        font-size:1rem;
+    }
+
+    .container textarea, .container input{
+        font-size: 1.4rem;
+    }
+
+    .container input {
+        margin-right: 1rem;
+    }
+
+    .explain_modes {
+        width: 100vw;
+        overflow-x: scroll;
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content:start;
+    }
+    .explain_modes table {
+        /*margin-left: 40rem;*/
+        justify-content:start;
+        width: 100vw;
+        overflow-x: scroll;
+    }
+
+    .container h2 {
+        width:100%;
+        font-size: 2.2rem;
+        text-align: center;
+    }
+
+    .container_values .container_label {
+        width: 100%;
+        text-align: center;
+        padding:0;
+        margin:0;
+    }
+
+    .container_values input {
+        margin: 0;
+        padding: 1rem;
+        padding-top: .5rem;
+        padding-bottom: .5rem;
+        max-width: 70%;
+    }
+
+    .container {
+        padding:1rem 0 2rem 0;
+        border-radius: 0;
+        width:100vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.4rem;
+    }
+
+    .container_wrapper div {
+        width: auto;
+    }
+
+    .container_values div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap:10px;
+        margin-bottom: 1rem;
+    }
+
+    .demostracion_aead{
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+        margin:1rem;
+        padding:2rem;
+        gap:15px;
+    }
+
+    .container_values .estado_interno_botones{
+        align-items: center;
+        justify-content: center;
+        margin:0;
+        margin-bottom: 1rem;
+        padding: 0;
+        max-height: none;
+    }
+
+    .container_values .label_number_input {
+        margin:0;
+        padding: 0;
+    }
+
+    .container_values .label_number_input_small {
+        width: auto;
+        padding-right: 0.3rem;
+    }
+
+    .container_wrapper div.container_wrapper_div_larger {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 1rem;
+        width:auto;
+        margin:auto;
+    }
+
+    .container_values .container_label {
+        width: 100%;
+        text-align: center;
+        padding:0;
+        margin:0;
+    }
+
+    #lin-layer div .container_label {
+        padding-right:0;
+        width: 8rem;
+    }
+
+    #sbox-layer div .label_number_input_small {
+        margin-right:0;
+        width:8rem;
+    }
+
+    #sbox-layer div input.sbox_input {
+        width:15%;
+    }
+
+    #sbox-layer div .label_number_input_small {
+        width:auto;
+    }
+
+    .container_values h2 {
+        margin-bottom: 0;
+    }
+
+    .container_content .encrypted {
+        width:100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .demostracion_aead button {
+        font-size: 1.2rem;
+    }
+
+    .explain_random button{
+        margin-top:2rem;
+        font-size: 1.2rem;
+    }
+}

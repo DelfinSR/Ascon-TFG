@@ -1,0 +1,47 @@
+\documentclass[12pt]{standalone}
+
+\usepackage{amsmath,amssymb}
+
+\usepackage[default,tabular]{sourcesanspro}
+\usepackage{sfmath}
+
+\usepackage{tikz}
+\usetikzlibrary{calc,cipher,sponge}
+
+\newcommand{\Asconp}[1]{\rotatebox{90}{\scriptsize Ascon-$p[#1]$}}
+
+\begin{document}
+\begin{tikzpicture}
+  \SpongeInitInner{$\text{IV} \| K \| N$}{\Asconp{12}}
+  \draw (P.south) +(0,-1) node[spongephase] (phase) {Initialization};
+  \SpongeXorInner{$\hskip-4pt 0^* \| K$}
+  \SpongeStep\SpongePhaseSep
+
+  \SpongeAbsorb{$A_0$}{\Asconp{8}}{128}{192}
+  \SpongeEtc
+  \SpongeAbsorb{$A_m$}{\Asconp{8}}{128\quad\null}{192}
+  \draw (x|-phase) node[spongephase] {Associated Data};
+  \SpongeXorInner{$\hskip-4pt 0^* \| 1$}
+  \SpongeStep\SpongePhaseSep
+
+  \SpongeDecrypt{$P_0$}{$C_0$}{\Asconp{8}}{128\quad\null}{192}
+  \SpongeEtc
+  \SpongeDecrypt{\hskip-8pt$P_{n\!-\!1}$}{$C_{n\!-\!1}$\hskip-8pt\null}{\Asconp{8}}{128}{192}
+  \draw (x|-phase) node[spongephase] {Ciphertext};
+  \SpongeDecryptFinal{$P_n$}{$C_n$}{   }{192}
+  \draw (t) node[bitwidth, above right] {\null\qquad128};
+  \SpongeStep\SpongePhaseSep
+
+  \SpongeXorInner{$K \| 0^* \hskip-4pt$}
+  \SpongeStep
+  \SpongePermute{\Asconp{12}}
+  \draw (P|-phase) node[spongephase] {Finalization};
+  \SpongeStep
+  \draw (Si-|Sc) coordinate[xor] (x)
+        (x|-I) node[var] (Kf) {$K$}
+        (x|-O) node[var] (T) {$T$};
+  \draw[next] (P.yinner) -- (x);
+  \draw[next] (Kf) -- (x);
+  \draw[next] (x)  -- node[bitwidth, swap] {128} (T);
+\end{tikzpicture}
+\end{document}

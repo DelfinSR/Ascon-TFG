@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ascon</title>
+    <script src="common.js"></script>
+    <script src="aead-functionality.js"></script>
+    <script src="hash-functionality.js"></script>
+    <script src="frontent_functionalities.js"></script>
+    <script src="standard_func.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="#indice" class="link_volver_indice">Volver al índice</a>
+    <section class="presentation">
+        <h1>Familia Ascon</h1>
+        <p>Ascon es una familia de criptosistemas ligeros. Incluye funciones de cifrado autenticado y de hash.</p>
+        <div class="indice" id="indice">
+            <h4>Índice</h4>
+            <ul class="indice-list">
+                <li><a href="#prueba_ascon-128">Prueba Ascon-128</a></li>
+                <li><a href="#explain_modes">Explicación de sus modos</a></li>
+                <li><a href="#explain_AEAD">Explicación del modo cifrado autenticado</a></li>
+                <li><a href="#demostracion_aead">Prueba los modos AEAD de Ascon</a></li>
+                <li><a href="#explain_random">Reto reconocer datos cifrados</a></li>
+                <li><a href="#explain_Hash">Explicación del modo resumen</a></li>
+                <li><a href="#prueba_ascon-hash">Prueba Ascon-Hash y Ascon-Hasha</a></li>
+                <li><a href="#explain_xof">Explicación del modo XOF y XOFa</a></li>
+                <li><a href="#prueba_ascon-xof">Prueba Ascon-XOF y XOFa</a></li>
+                <li><a href="#explain_standard">Explicación del borrador del estándar</a></li>
+                <li><a href="#demostracion_standard">Prueba el borrador del estándar</a></li>
+                <li><a href="#explain_estado_interno">Explicación de su estado interno</a></li>
+                <li><a href="#prueba_estado_interno">Prueba la generación del estado interno</a></li>
+                <li><a href="#explain_round_functions">Explicación función de su permutación</a></li>
+                <li><a href="#prueba_funcion_ronda_ascon">Prueba la función de permutación de Ascon</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="container" id="prueba_ascon-128">
+        <h2>Prueba Ascon-128</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="ascii_input">Datos en claro:</label>
+                    <input id="ascii_input" type="text" placeholder="Introduce los datos a cifrar" value="Secreto muy importante">
+                    <button class="encrypt-button" id="encrypt-button" onclick="ascon_aead_encrypt()">Cifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input">Datos asociados:</label>
+                    <input id="add_data_input" type="text" placeholder="Introduce los datos asociados a los datos a cifrar" value="emisor@ejemplo.com">
+                </div>
+                <div>
+                    <label class="container_label" for="password_input">Clave:</label>
+                    <input id="password_input" type="text" placeholder="Introduce una contraseña secreta" value="Fq7wm3v?;Rx|JVX;">
+                    <button class="password-button" id="gen_password-button" onclick="gen_password()">Generar contraseña</button>
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input">Nonce:</label>
+                    <input id="nonce_input" type="text" placeholder="Introduce el nonce" value="k-1m!T!NzU[bR0a^">
+                    <button class="nonce-button" id="gen_nonce-button" onclick="gen_nonce()">Generar nonce</button>
+                </div>
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;align-items: center;">
+                    <label class="container_label" for="encrypted_output">Cifrado: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-0" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Convertir a hexadecimal</button>
+                </div>
+                <textarea rows="5" cols="64" name="encrypted_output" id="encrypted_output" disabled  placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output">Tag: </label>
+                <textarea name="tag_output" id="tag_output" disabled placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="explain explain_modes" id="explain_modes">
+        <h1>Modos Ascon</h1>
+        <p>Tal y como especifican los autores de Ascon, esta familia de criptosistema incluye los modos de cifrado autenticado con datos asociados, modo Hash y modo Xof. Todos los modos utilizan la misma función de permutación, que es una de las principales herramientas que utilizan los diseñadores para cifrar los datos. Sin embargo, existe una diferencia en el diseño del modo AEAD y los modos Hash y Xof.</p>
+        <p>Los autores especifican estos parámetros para los modos de Ascon:</p>
+        <div class="overflow_container">
+            <table>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tamaño de clave</th>
+                    <th>Tamaño de nonce</th>
+                    <th>Tamaño de tag</th>
+                    <th>Tamaño del hash</th>
+                    <th>Tamaño de bloque de entrada/salida</th>
+                    <th>Número de rondas a</th>
+                    <th>Número de rondas b</th>
+                </tr>
+                <tr>
+                    <td>Ascon-128</td>
+                    <td>128 bits</td>
+                    <td>128 bits</td>
+                    <td>128 bits</td>
+                    <td>-</td>
+                    <td>64 bits</td>
+                    <td>12</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td>Ascon-128a</td>
+                    <td>128 bits</td>
+                    <td>128 bits</td>
+                    <td>128 bits</td>
+                    <td>-</td>
+                    <td>128 bits</td>
+                    <td>12</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td>Ascon-Hash</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>256 bits</td>
+                    <td>64 bits</td>
+                    <td>12</td>
+                    <td>12</td>
+                </tr>
+                <tr>
+                    <td>Ascon-Hasha</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>256 bits</td>
+                    <td>64 bits</td>
+                    <td>12</td>
+                    <td>8</td>
+                </tr>
+            </table>
+        </div>
+    </section>
+
+    <section class="explain explain_AEAD" id="explain_AEAD">
+        <h1>Ascon AEAD</h1>
+        <p>El modo AEAD es el modo de cifrado autenticado con datos asociados. Este modo no solo cifra la información y evita que un tercero pueda verla, sino que además autentica datos asociados. Estos datos asociados pueden ser, por ejemplo, la cabecera de un correo. Este modo de operación es muy útil en situaciones en las que, además de cifrar datos, se quiere autenticar otros que no que se van a cifrar, todo en el mismo algoritmo.</p>
+        <p>Este toma las siguientes entradas: </p>
+        <ul>
+            <li><strong>Clave secreta</strong>.</li>
+            <li>
+                <strong>Nonce:</strong> Conjunto de datos que debe ser único cada vez que se cifra. No es secreto y suelen ser aleatorios. Si no se utilizase un nonce, siempre que se cifrasen los mismos datos con la misma contraseña se obtendría el mismo resultado. Esto es un comportamiento indeseado. Por esto mismo, los nonce son de un solo uso.
+            </li>
+            <li>
+                <strong>Datos en claro:</strong>
+                Los datos a cifrar. El modo AEAD asegura la privacidad, integridad y autenticidad de estos.
+            </li>
+            <li>
+                <strong>Datos asociados:</strong> Datos que no se quieren cifrar, pero sí se quieren autenticar.
+            </li>
+            
+        </ul>
+        <p>A continuación, se muestra un esquema del modo:</p>
+        <div class="overflow_container">
+            <img class="img_big" src="img/ascon-encrypt-scheme.png" alt="ASCON aead encrypt">
+        </div>
+        <p>Este es un diagrama de cómo funciona el modo AEAD de Ascon. Consta de cuatro pasos.</p>
+        <ol>
+            <li>Inicializar el algoritmo</li>
+            <li>Fase de datos asociados</li>
+            <li>Fase de texto plano</li>
+            <li>Finalización</li>
+        </ol>
+        <p>En la fase de datos asociados se introducen datos pero no se obtiene una respuesta. Esto es así porque todas las posteriores salidas del algoritmo dependen de todas las entradas anteriores. De este modo, en la fase de texto plano y la de finalización, en las que sí que se devuelven datos, si se cambian los datos asociados, el resultado cambiará radicalmente.</p>    
+    </section>
+
+    <section class="explain demostracion_aead" id="demostracion_aead">
+        <button id="Ascon-128-button" onclick="show_ascon_128()">Prueba Ascon-128</button>
+        <button id="Ascon-128a-button" onclick="show_ascon_128a()">Prueba Ascon-128a</button>
+        <button id="Ascon-80pq-button" onclick="show_ascon_80pq()">Prueba Ascon-80pq</button>
+    </section>
+
+    <section class="container" id="prueba_ascon-128_cifrar" style="display:none;">
+        <h2>Prueba cifrar con Ascon-128</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="ascii_input">Datos en claro:</label>
+                    <textarea pattern="^[01]+$" id="ascii_input_128" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_128_encrypt_demos()">Cifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_encrypt_128">Datos asociados:</label>
+                    <input id="add_data_input_encrypt_128" type="text" placeholder="Datos asociados">
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_encrypt_128">Clave:</label>
+                    <input id="password_input_encrypt_128" type="text" placeholder="Clave">
+                    <button class="password-button" id="gen_password-button" onclick="gen_password_128()">Generar contraseña</button>
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_encrypt_128">Nonce:</label>
+                    <input id="nonce_input_encrypt_128" type="text" placeholder="Nonce">
+                    <button class="nonce-button" id="gen_nonce-button" onclick="gen_nonce_128()">Generar nonce</button>
+                </div>
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;align-items: center;">
+                    <label class="container_label" for="encrypted_output_128">Cifrado: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-1" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Convertir a hexadecimal</button>
+                </div>
+
+                <textarea name="encrypted_output_128" id="encrypted_output_128" disabled  placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output">Tag: </label>
+                <textarea name="tag_output_encrypted_128" id="tag_output_encrypted_128" disabled placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-128_descifrar" style="margin-top: 2rem;display:none;">
+        <h2>Prueba descifrar Ascon-128</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label id="input-code-label-0" class="container_label" for="decrypted_input_128">Datos cifrados:</label>
+                    <textarea pattern="^[01]+$" style="margin-left:2rem" id="decrypted_input_128" type="text" placeholder="Introduce los datos cifrados en binario"></textarea>
+                    <button style="width:10rem" class="encrypt-button" id="change-input-code-0" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Introducir datos en hexadecimal</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_decrypt_128">Datos asociados:</label>
+                    <input id="add_data_input_decrypt_128" type="text" placeholder="Datos asociados">
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_128_decrypt_demos()">Descifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_decrypt_128">Clave:</label>
+                    <input id="password_input_decrypt_128" type="text" placeholder="Clave">
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_decrypt_128">Nonce:</label>
+                    <input id="nonce_input_decrypt_128" type="text" placeholder="Nonce">
+                </div>
+                <div>
+                    <label class="container_label" for="tag_input_decrypt_128">Tag: </label>
+                    <textarea pattern="^[01]+$" id="tag_input_decrypt_128" type="text" placeholder="Introduce el tag en binario"></textarea>
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="decrypted_output_128">Descifrado: </label>
+                <textarea name="decrypted_output_128" id="decrypted_output_128" disabled  placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output_decrypted_128">Tag: </label>
+                <textarea name="tag_output_decrypted_128" id="tag_output_decrypted_128" disabled placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="container" id="prueba_ascon-128a_cifrar" style="display:none;">
+        <h2>Prueba cifrar con Ascon-128a</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="ascii_input">Datos en claro:</label>
+                    <textarea pattern="^[01]+$" id="ascii_input_128a" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_128a_encrypt_demos()">Cifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_encrypt_128a">Datos asociados:</label>
+                    <input id="add_data_input_encrypt_128a" type="text" placeholder="Datos asociados">
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_encrypt_128a">Clave:</label>
+                    <input id="password_input_encrypt_128a" type="text" placeholder="Clave">
+                    <button class="password-button" id="gen_password-button" onclick="gen_password_128a()">Generar contraseña</button>
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_encrypt_128a">Nonce:</label>
+                    <input id="nonce_input_encrypt_128a" type="text" placeholder="Nonce">
+                    <button class="nonce-button" id="gen_nonce-button" onclick="gen_nonce_128a()">Generar nonce</button>
+                </div>
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;align-items: center;">
+                    <label class="container_label" for="encrypted_output_128a">Cifrado: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-2" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Convertir a hexadecimal</button>
+                </div>
+                <textarea name="encrypted_output_128a" id="encrypted_output_128a" disabled  placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output">Tag: </label>
+                <textarea name="tag_output_encrypted_128a" id="tag_output_encrypted_128a" disabled placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-128a_descifrar" style="margin-top: 2rem;display:none;">
+        <h2>Prueba descifrar Ascon-128a</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label id="input-code-label-1" class="container_label" for="decrypted_input_128a">Datos cifrados:</label>
+                    <textarea pattern="^[01]+$" style="margin-left:2rem" id="decrypted_input_128a" type="text" placeholder="Introduce los datos cifrados en binario:"></textarea>
+                    <button style="width:10rem" class="encrypt-button" id="change-input-code-1" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Introducir datos en hexadecimal</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_decrypt_128a">Datos asociados:</label>
+                    <input id="add_data_input_decrypt_128a" type="text" placeholder="Datos asociados">
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_128a_decrypt_demos()">Descifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_decrypt_128a">Clave:</label>
+                    <input id="password_input_decrypt_128a" type="text" placeholder="Clave">
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_decrypt_128a">Nonce:</label>
+                    <input id="nonce_input_decrypt_128a" type="text" placeholder="Nonce">
+                </div>
+                <div>
+                    <label class="container_label" for="tag_input_decrypt_128a">Tag: </label>
+                    <textarea pattern="^[01]+$" id="tag_input_decrypt_128a" type="text" placeholder="Introduce el tag en binario"></textarea>
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="decrypted_output_128a">Descifrado: </label>
+                <textarea name="decrypted_output_128a" id="decrypted_output_128a" disabled  placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output_decrypted_128a">Tag: </label>
+                <textarea name="tag_output_decrypted_128a" id="tag_output_decrypted_128a" disabled placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-80pq_cifrar" style="display:none;">
+        <h2>Prueba cifrar con Ascon-80pq</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="ascii_input">Datos en claro:</label>
+                    <textarea pattern="^[01]+$" id="ascii_input_80pq" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_80pq_encrypt_demos()">Cifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_encrypt_80pq">Datos asociados:</label>
+                    <input id="add_data_input_encrypt_80pq" type="text" placeholder="Datos asociados">
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_encrypt_80pq">Clave:</label>
+                    <input id="password_input_encrypt_80pq" type="text" placeholder="Clave">
+                    <button class="password-button" id="gen_password-button" onclick="gen_password_80pq()">Generar contraseña</button>
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_encrypt_80pq">Nonce:</label>
+                    <input id="nonce_input_encrypt_80pq" type="text" placeholder="Nonce">
+                    <button class="nonce-button" id="gen_nonce-button" onclick="gen_nonce_80pq()">Generar nonce</button>
+                </div>
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;align-items: center;">
+                    <label class="container_label" for="encrypted_output_80pq">Cifrado: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-3" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Convertir a hexadecimal</button>
+                </div>
+
+                <textarea name="encrypted_output_80pq" id="encrypted_output_80pq" disabled  placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output">Tag: </label>
+                <textarea name="tag_output_encrypted_80pq" id="tag_output_encrypted_80pq" disabled placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-80pq_descifrar" style="margin-top: 2rem;display:none;">
+        <h2>Prueba descifrar Ascon-80pq</h2>
+        <div class="container_content">
+            <div class="container_values">
+                <div>
+                    <label id="input-code-label-2" class="container_label" for="decrypted_input_80pq">Datos cifrados:</label>
+                    <textarea pattern="^[01]+$" style="margin-left:2rem" id="decrypted_input_80pq" type="text" placeholder="Introduce los datos cifrados en binario"></textarea>
+                    <button style="width:10rem" class="encrypt-button" id="change-input-code-2" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Introducir datos en hexadecimal</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_decrypt_80pq">Datos asociados:</label>
+                    <input id="add_data_input_decrypt_80pq" type="text" placeholder="Datos asociados">
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_80pq_decrypt_demos()">Descifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_decrypt_80pq">Clave:</label>
+                    <input id="password_input_decrypt_80pq" type="text" placeholder="Clave">
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_decrypt_80pq">Nonce:</label>
+                    <input id="nonce_input_decrypt_80pq" type="text" placeholder="Nonce">
+                </div>
+                <div>
+                    <label class="container_label" for="tag_input_decrypt_80pq">Tag: </label>
+                    <textarea pattern="^[01]+$" id="tag_input_decrypt_80pq" type="text" placeholder="Introduce el tag en binario"></textarea>
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="decrypted_output_80pq">Descifrado: </label>
+                <textarea name="decrypted_output_80pq" id="decrypted_output_80pq" disabled  placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output_decrypted_80pq">Tag: </label>
+                <textarea name="tag_output_decrypted_80pq" id="tag_output_decrypted_80pq" disabled placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="explain explain_random" id="explain_random">
+        <p>Saber diferenciar datos cifrados de datos aleatorios es una tarea difícil ¿No es fascinante?</p>
+        <p>A continuación, se dan 3 conjuntos de datos. 2 de ellos son datos aleatorios y solo uno son datos cifrados ¿Sabrías decir cuál fue el resultado de aplicar Ascon-128?</p>
+        <button onclick="generar_textareas_aleatorios_y_aead()">Generar datos</button>
+    </section>
+
+    <section class="explain demostracion_aead" id="explain_random_choose" style="display:none">
+        <p onclick="desvelar_posicion_random_aead()" id="textarea_random_0" rows="3" class="textarea-explain_random_choose"  disabled placeholder="Pulse el botón de descifrar para obtener un resultado">1000000001000000000011000000011000000000000000000000000000000000</p>
+        <p onclick="desvelar_posicion_random_aead()" id="textarea_random_1" rows="3" class="textarea-explain_random_choose" disabled placeholder="Pulse el botón de descifrar para obtener un resultado">1000000001000000000011000000011000000000000000000000000000000000</p>
+        <p onclick="desvelar_posicion_random_aead()" id="textarea_random_2" rows="3" class="textarea-explain_random_choose" disabled placeholder="Pulse el botón de descifrar para obtener un resultado">1000000001000000000011000000011000000000000000000000000000000000</p>
+    </section>
+
+
+    <section class="explain explain_hash" id="explain_Hash">
+        <h1>Ascon Hash</h1>
+        <p>El modo Hash es el modo de resumen. Las funciones hash o resumen son funciones que para una entrada de cualquier tamaño devuelven un resultado de longitud fija. Son muy útiles para asegurar que los datos no han sido modificados. A esta propiedad se le denomina integridad.</p>
+        <div class="overflow_container">
+            <img class="img_medium" src="img/ascon-hash-scheme.png" alt="ASCON hash">
+        </div>
+        <p>Este es un diagrama de cómo funciona el modo Hash de Ascon. Consta de tres pasos.</p>
+        <ol>
+            <li>Inicializar el algoritmo</li>
+            <li>Absorber el mensaje</li>
+            <li>Liberar el resultado</li>
+        </ol>
+        <p>Como se puede ver, la función de permutación se aplica numerosas veces a lo largo del algoritmo.</p>
+    </section>
+
+    <section class="container" id="prueba_ascon-hash">
+        <h2>Prueba Ascon-Hash</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="hash_ascii_input">Datos a resumir:</label>
+                    <textarea id="hash_ascii_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande">Datos a resumir</textarea>
+
+                    <button class="encrypt-button" id="encrypt-button" onclick="hash_demonstration()">hash!!</button>
+                </div>
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;align-items: center;">
+                    <label class="container_label" for="hash_output">Resumen: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-4" onclick="convert_to_hex_bin(['hash_output'])">Convertir a hexadecimal</button>
+                </div>
+                <textarea name="hash_output" id="hash_output" disabled  placeholder="Pulse el botón de hash para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="container" id="prueba_ascon-hasha" style="margin-top: 2rem;">
+        <h2>Prueba Ascon-Hasha</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="hasha_ascii_input">Datos a resumir:</label>
+                    <textarea id="hasha_ascii_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande">Datos a resumir</textarea>
+
+                    <button class="encrypt-button" id="encrypt-button" onclick="hasha_demonstration()">hash!!</button>
+                </div>
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;align-items: center;">
+                    <label class="container_label" for="hasha_output">Resumen: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-5" onclick="convert_to_hex_bin(['hasha_output'])">Convertir a hexadecimal</button>
+                </div>
+                <textarea name="hasha_output" id="hasha_output" disabled  placeholder="Pulse el botón de hash para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="explain explain_xof" id="explain_xof">
+        <h1>Ascon Xof</h1>
+        <p>El modo Xof funciona prácticamente igual que el modo hash. La diferencia está en que la longitud del modo Xof es "infinita". Sirve para generar longitudes arbitrarias de hash.</p>
+        <div class="overflow_container">
+            <img class="img_medium" src="img/ascon-hash-scheme.png" alt="ASCON xof">
+        </div>
+    </section>
+
+    <section class="container" id="prueba_ascon-xof">
+        <h2>Prueba Ascon-xof</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="xof_ascii_input">Datos a resumir:</label>
+                    <textarea id="xof_ascii_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande">Datos a resumir</textarea>
+                    <button class="encrypt-button" id="encrypt-button" onclick="xof_demonstration()">Aplicar!!</button>
+                </div>
+
+                <div>
+                    <label class="label_number_input" for="xof_output_length">Longitud del resultado:</label>
+                    <input id="xof_output_length" type="number" placeholder="input" value="256" min="1">
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="xof_output">Resultado: </label>
+                <textarea name="xof_output" id="xof_output" disabled  placeholder="Pulse el botón de aplicar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="container" id="prueba_ascon-xofa" style="margin-top: 2rem;">
+        <h2>Prueba Ascon-xofa</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="xofa_ascii_input">Datos en claro:</label>
+                    <textarea id="xofa_ascii_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande">Datos a resumir</textarea>
+                    <button class="encrypt-button" id="encrypt-button" onclick="xofa_demonstration()">Aplicar!!</button>
+                </div>
+
+                <div>
+                    <label class="label_number_input" for="xofa_output_length">Longitud del resultado:</label>
+                    <input id="xofa_output_length" type="number" placeholder="input" value="256" min="1">
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="xofa_output">Resultado: </label>
+                <textarea name="xofa_output" id="xofa_output" disabled  placeholder="Pulse el botón de aplicar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="explain explain_estado_interno" id="explain_standard">
+        <p>A fecha de 16 de mayo, la versión del NIST de Ascon sigue en modo borrador. A continuación, puede probarlos.</p>
+    </section>
+
+    <section class="explain demostracion_aead" id="demostracion_standard">
+        <button id="Ascon-AEAD128-button" onclick="show_ascon_AEAD128()">Prueba Ascon-AEAD128</button>
+        <button id="Ascon-Hash256-button" onclick="show_ascon_Hash256()">Prueba Ascon-Hash256</button>
+        <button id="Ascon-XOF128-button" onclick="show_ascon_XOF128()">Prueba Ascon-XOF128</button>
+        <button id="Ascon-CXOF128-button" onclick="show_ascon_CXOF128()">Prueba Ascon-CXOF128</button>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-AEAD128_standard_cifrar" style="margin-top: 2rem;display: none;">
+        <h2>Prueba cifrar con Ascon-AEAD128</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="ascii_input">Datos en claro:</label>
+                    <textarea pattern="^[01]+$" id="ascii_input_AEAD128_standard" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_AEAD128_standard_encrypt_demos()">Cifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_encrypt_AEAD128_standard">Datos asociados:</label>
+                    <input id="add_data_input_encrypt_AEAD128_standard" type="text" placeholder="Datos asociados">
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_encrypt_AEAD128_standard">Clave:</label>
+                    <input id="password_input_encrypt_AEAD128_standard" type="text" placeholder="Clave">
+                    <button class="password-button" id="gen_password-button" onclick="gen_password_AEAD128_standard()">Generar contraseña</button>
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_encrypt_AEAD128_standard">Nonce:</label>
+                    <input id="nonce_input_encrypt_AEAD128_standard" type="text" placeholder="Nonce">
+                    <button class="nonce-button" id="gen_nonce-button" onclick="gen_nonce_AEAD128_standard()">Generar nonce</button>
+                </div>
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;">
+                    <label class="container_label" for="encrypted_output_AEAD128_standard">Cifrado: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-AEAD128" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Convertir a hexadecimal</button>
+                </div>
+
+                <textarea name="encrypted_output_AEAD128_standard" id="encrypted_output_AEAD128_standard" disabled  placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output">Tag: </label>
+                <textarea name="tag_output_encrypted_AEAD128_standard" id="tag_output_encrypted_AEAD128_standard" disabled placeholder="Pulse el botón de cifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-AEAD128_standard_descifrar" style="margin-top: 2rem;display: none;">
+        <h2>Prueba descifrar Ascon-AEAD128</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label id="input-code-label-0" class="container_label" for="decrypted_input_AEAD128_standard">Datos cifrados:</label>
+                    <textarea pattern="^[01]+$" style="margin-left:2rem" id="decrypted_input_AEAD128_standard" type="text" placeholder="Introduce los datos cifrados en binario"></textarea>
+                    <button style="width:10rem" class="encrypt-button" id="change-input-code-AEAD128" onclick="convert_to_hex_bin(['encrypted_output','tag_output'])">Introducir datos en hexadecimal</button>
+                </div>
+                <div>
+                    <label class="container_label" for="add_data_input_decrypt_AEAD128_standard">Datos asociados:</label>
+                    <input id="add_data_input_decrypt_AEAD128_standard" type="text" placeholder="Datos asociados">
+                    <button class="encrypt-button" id="decrypt-button" onclick="ascon_AEAD128_standard_decrypt_demos()">Descifrar!!</button>
+                </div>
+                <div>
+                    <label class="container_label" for="password_input_decrypt_AEAD128_standard">Clave:</label>
+                    <input id="password_input_decrypt_AEAD128_standard" type="text" placeholder="Clave">
+                </div>
+                <div>
+                    <label class="container_label" for="nonce_input_decrypt_AEAD128_standard">Nonce:</label>
+                    <input id="nonce_input_decrypt_AEAD128_standard" type="text" placeholder="Nonce">
+                </div>
+                <div>
+                    <label class="container_label" for="tag_input_decrypt_AEAD128_standard">Tag: </label>
+                    <textarea pattern="^[01]+$" id="tag_input_decrypt_AEAD128_standard" type="text" placeholder="Introduce el tag en binario"></textarea>
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="decrypted_output_AEAD128_standard">Descifrado: </label>
+                <textarea name="decrypted_output_AEAD128_standard" id="decrypted_output_AEAD128_standard" disabled  placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+    
+                <label for="tag_output_decrypted_AEAD128_standard">Tag: </label>
+                <textarea name="tag_output_decrypted_AEAD128_standard" id="tag_output_decrypted_AEAD128_standard" disabled placeholder="Pulse el botón de descifrar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-hash256" style="margin-top: 2rem; display: none;">
+        <h2>Prueba Ascon-Hash256</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="hash256_ascii_input">Datos en claro:</label>
+                    <textarea id="hash256_ascii_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+                    <button class="encrypt-button" id="encrypt-button" onclick="hash256_demonstration()">Aplicar!!</button>
+                </div>
+
+            </div>
+            <div class="encrypted">
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;">
+                    <label class="container_label" for="hash256_output">Resultado: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-Hash256" onclick="convert_to_hex_bin(['hash_output'])">Convertir a hexadecimal</button>
+                </div>
+                
+                <textarea name="hash256_output" id="hash256_output" disabled  placeholder="Pulse el botón de aplicar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="container" id="prueba_ascon-xof128" style="margin-top: 2rem;display: none;">
+        <h2>Prueba Ascon-XOF128</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="xof128_ascii_input">Datos en claro:</label>
+                    <textarea id="xof128_ascii_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+                    <button class="encrypt-button" id="encrypt-button" onclick="xof128_demonstration()">Aplicar!!</button>
+                </div>
+
+                <div>
+                    <label class="label_number_input" for="xof128_output_length">Longitud del resultado:</label>
+                    <input id="xof128_output_length" type="number" placeholder="input" value="256" min="1">
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="xof128_output">Resultado: </label>
+                <textarea name="xof128_output" id="xof128_output" disabled  placeholder="Pulse el botón de aplicar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+        <section class="container" id="prueba_ascon-cxof128" style="margin-top: 2rem;display: none;">
+        <h2>Prueba Ascon-CXOF128</h2>
+        <div class="container_content">
+            <div class="container_values">
+    
+                <div>
+                    <label class="container_label" for="cxof128_ascii_input">Datos en claro:</label>
+                    <textarea id="cxof128_ascii_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+                    <button class="encrypt-button" id="encrypt-button" onclick="cxof128_demonstration()">Aplicar!!</button>
+                </div>
+
+                <div>
+                    <label class="container_label" style="margin-right: 3rem;" for="cxof128_custom_input">Datos para personalizar:</label>
+                    <textarea id="cxof128_custom_input" type="text" placeholder="Arrastra la esquina inferior derecha para hacerme más grande"></textarea>
+                </div>
+
+                <div>
+                    <label class="label_number_input" for="cxof128_output_length">Longitud del resultado:</label>
+                    <input id="cxof128_output_length" type="number" placeholder="input" value="256" min="1">
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="cxof128_output">Resultado: </label>
+                <textarea name="cxof128_output" id="cxof128_output" disabled  placeholder="Pulse el botón de aplicar para obtener un resultado"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="explain explain_estado_interno" id="explain_estado_interno">
+        <h1>Estado interno</h1>
+        <p>Todas las operaciones de Ascon dependen del estado interno. Por este motivo, entender cómo funciona es vital para entender Ascon. </p>
+        <p>El estado de Ascon tiene una longitud de 320 bits. Sin embargo, para aplicar operaciones se separa en 5 bloques de 64 bits (S0,S1,S2,S3,S4). De este modo, se convierte el estado interno en una especie de matriz que será utilizada por la función de permutación.</p>
+        <div class="overflow_container">
+            <img class="img_medium" src="img/state_horizontal.png" alt="ASCON state horizontal">
+        </div>
+        <p>En todos los modos de Ascon, el estado interno se construye como una concatenación de los valores de la configuración</p>
+        <p>A continuación, puede probar a construir un estado interno para así entender su funcionamiento.</p>
+    </section>
+    
+    <section class="container" id="prueba_estado_interno">
+        <h2>Prueba el estado interno de Ascon</h2>
+        <div class="container_content">
+            <div class="container_values">
+                <div class="estado_interno_botones">
+                    <button class="encrypt-button" id="encrypt-button" onclick="internal_state_demonstration_set_ascon_128_values()">Valores Ascon-128</button>
+                    <button class="encrypt-button" id="encrypt-button" onclick="internal_state_demonstration_set_ascon_128a_values()">Valores Ascon-128a</button>
+                    <button class="encrypt-button" id="encrypt-button" onclick="internal_state_demonstration_set_ascon_hash_values()">Valores Ascon-Hash</button>
+                    <button class="encrypt-button" id="encrypt-button" onclick="internal_state_demonstration_set_ascon_hasha_values()">Valores Ascon-Hasha</button>
+                    <button class="encrypt-button" id="encrypt-button" onclick="internal_state_demonstration_set_ascon_xof_values()">Valores Ascon-Xof</button>
+                    <button class="encrypt-button" id="encrypt-button" onclick="internal_state_demonstration_set_ascon_xofa_values()">Valores Ascon-Xofa</button>
+                </div>
+                <div id="key-length-display-demostracion-estado-interno">
+                    <label class="label_number_input" for="key_length">Tamaño de clave:</label>
+                    <input id="key_length" type="number" placeholder="input" value="128" min="0" max="256">
+                    <button class="encrypt-button" id="internal_state_demonstration_button" onclick="internal_state_demonstration_aead()">Construir estado interno</button>
+                </div>
+                <div id="hash-length-display-demostracion-estado-interno" style="display:none;">
+                    <label class="label_number_input" for="hash_length">Tamaño hash:</label>
+                    <input id="hash_length" type="number" placeholder="input" value="256" min="0" max="65536">
+                    <button class="encrypt-button" id="internal_state_demonstration_button" onclick="internal_state_demonstration_hash()">Construir estado interno</button>
+
+                </div>
+                <div>
+                    <label class="label_number_input" for="block_length">Tamaño de bloque:</label>
+                    <input id="block_length" type="number" placeholder="input" value="64" min="1" max="320">
+                </div>
+                <div>
+                    <label class="label_number_input" for="a_rounds_length">Rondas a:</label>
+                    <input id="a_rounds_length" type="number" placeholder="input" value="12" min="0" max="256">
+                </div>
+                <div>
+                    <label class="label_number_input" for="b_rounds_length">Rondas b:</label>
+                    <input id="b_rounds_length" type="number" placeholder="input" value="6" min="0" max="256">
+                </div>
+
+                <div id="password-display-demostracion-estado-interno">
+                    <label class="container_label" for="password_input_internal_state">Password:</label>
+                    <input id="password_input_internal_state" type="text" placeholder="input" value="B,zgX?b\K$@N,m^%">
+                </div>
+                <div id="nonce-display-demostracion-estado-interno">
+                    <label class="container_label" for="nonce_input_internal_state">Nonce:</label>
+                    <input id="nonce_input_internal_state" type="text" placeholder="input" value="/SB%'KyC%4()\0[c">
+                </div>
+
+            </div>
+            <div class="encrypted">
+                <div style="display:flex;flex-direction: row;align-items: center;">
+                    <label class="container_label" for="internal_state_output">Estado interno: </label>
+                    <button class="encrypt-button" id="change-coding-encryption-6" onclick="convert_to_hex_bin(['internal_state_output'])">Convertir a hexadecimal</button>
+                </div>
+                <textarea rows="5" cols="62" name="internal_state_output" id="internal_state_output" disabled  placeholder='Pulse "Construir estado interno" para obtener aquí el resultado'></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="explain explain_round_functions" id="explain_round_functions">
+        <h2>Función de permutación</h2>
+        <p>La función de permutación es la función que se aplica en cada ronda. Sin ella, no se cifrarían correctamente los datos. La seguridad de todo el criptosistema depende de la seguridad de esta.</p>
+        <p>La función de permutación de Ascon consta de 3 pasos: suma de constante de ronda, sustitución y capa lineal</p>
+        <ul>
+            <li>La primera operación es la suma de constante de ronda. Como su propio nombre indica, lo que se hace es sumarle una constante al estado interno.</li>
+            <li>En la fase de sustitución, los valores del estado interno son sustituidos por otros siguiendo una regla específica elegida cuidadosamente por los autores. Esta se aplica en las columnas del estado interno.</li>
+            <li>Finalmente, la capa lineal se aplica en las filas de Ascon, y su principal objetivo es "mezclar" correctamente las filas.</li>
+        </ul>
+        <p>Como se puede observar, la fase de sustitución y la capa lineal se aplican perpendicularmente. Esto, como todas las configuraciones y constantes de las operaciones de Ascon, fue pensado para brindar la máxima seguridad y eficiencia.</p>
+        <p>A continuación, se muestran las constantes de ronda: </p>
+        <div class="overflow_container">
+            <table>
+                <tr>
+                    <th>12 rondas</th>
+                    <th>8 rondas</th>
+                    <th>6 rondas</th>
+                    <th>Constante</th>
+                </tr>
+                <tr>
+                    <td>Ronda 1</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>00000000000000f0</td>
+                </tr>
+                <tr>
+                    <td>Ronda 2</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>00000000000000e1</td>
+                </tr>
+                <tr>
+                    <td>Ronda 3</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>00000000000000d2</td>
+                </tr>
+                <tr>
+                    <td>Ronda 4</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>00000000000000c3</td>
+                </tr>
+                <tr>
+                    <td>Ronda 5</td>
+                    <td>Ronda 1</td>
+                    <td>-</td>
+                    <td>00000000000000b4</td>
+                </tr>
+                <tr>
+                    <td>Ronda 6</td>
+                    <td>Ronda 2</td>
+                    <td>-</td>
+                    <td>00000000000000a5</td>
+                </tr>
+                <tr>
+                    <td>Ronda 7</td>
+                    <td>Ronda 3</td>
+                    <td>Ronda 1</td>
+                    <td>0000000000000096</td>
+                </tr>
+                <tr>
+                    <td>Ronda 8</td>
+                    <td>Ronda 4</td>
+                    <td>Ronda 2</td>
+                    <td>0000000000000087</td>
+                </tr>
+                <tr>
+                    <td>Ronda 9</td>
+                    <td>Ronda 5</td>
+                    <td>Ronda 3</td>
+                    <td>0000000000000078</td>
+                </tr>
+                <tr>
+                    <td>Ronda 10</td>
+                    <td>Ronda 6</td>
+                    <td>Ronda 4</td>
+                    <td>0000000000000069</td>
+                </tr>
+                <tr>
+                    <td>Ronda 11</td>
+                    <td>Ronda 7</td>
+                    <td>Ronda 5</td>
+                    <td>000000000000005a</td>
+                </tr>
+                <tr>
+                    <td>Ronda 12</td>
+                    <td>Ronda 8</td>
+                    <td>Ronda 6</td>
+                    <td>000000000000004b</td>
+                </tr>
+            </table>
+        </div>
+        <p>A continuación, se muestran los valores de la S-box: </p>
+        <div class="overflow_container">
+            <table>
+                <tr>
+                    <td>x</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                    <td>4</td>
+                    <td>5</td>
+                    <td>6</td>
+                    <td>7</td>
+                    <td>8</td>
+                    <td>9</td>
+                    <td>a</td>
+                    <td>b</td>
+                    <td>c</td>
+                    <td>d</td>
+                    <td>e</td>
+                    <td>f</td>
+                </tr>
+                <tr>
+                    <td>S(x)</td>
+                    <td>4</td>
+                    <td>b</td>
+                    <td>1f</td>
+                    <td>14</td>
+                    <td>1a</td>
+                    <td>15</td>
+                    <td>9</td>
+                    <td>2</td>
+                    <td>1b</td>
+                    <td>5</td>
+                    <td>8</td>
+                    <td>12</td>
+                    <td>1d</td>
+                    <td>3</td>
+                    <td>6</td>
+                    <td>1c</td>
+                </tr>
+                <tr>
+                    <td>x</td>
+                    <td>10</td>
+                    <td>11</td>
+                    <td>12</td>
+                    <td>13</td>
+                    <td>14</td>
+                    <td>15</td>
+                    <td>16</td>
+                    <td>17</td>
+                    <td>18</td>
+                    <td>19</td>
+                    <td>1a</td>
+                    <td>1b</td>
+                    <td>1c</td>
+                    <td>1d</td>
+                    <td>1e</td>
+                    <td>1f</td>
+                </tr>
+                <tr>
+                    <td>S(x)</td>
+                    <td>1e</td>
+                    <td>13</td>
+                    <td>7</td>
+                    <td>e</td>
+                    <td>0</td>
+                    <td>d</td>
+                    <td>11</td>
+                    <td>18</td>
+                    <td>10</td>
+                    <td>c</td>
+                    <td>1</td>
+                    <td>19</td>
+                    <td>16</td>
+                    <td>a</td>
+                    <td>f</td>
+                    <td>17</td>
+                </tr>
+            </table>
+        </div>
+        <p>A continuación, se muestra la capa lineal de Ascon</p>
+        <div class="overflow_container">
+            <img class="img_small" src="img/equation.png" alt="ASCON aead encrypt">
+        </div>
+        <p>Como puede ver, hay una ecuación por cada Si. En cada una hay dos constantes que son dadas por los autores. A continuación, puede probar a cambiar las constantes de una de las funciones.</p>
+
+    </section>
+
+    <section class="container" id="prueba_capa_lineal">
+        <h2>Prueba la capa lineal de Ascon</h2>
+        <div class="container_content">
+            <div class="container_values">
+
+                <div>
+                    <label class="label_number_input" for="constante1">Constante 1:</label>
+                    <input id="constante1" type="number" placeholder="input" value="12" min="0">
+                    <button class="encrypt-button" id="encrypt-button" onclick="lin_layer_demostration()">Aplicar capa lineal</button>
+                </div>
+                <div>
+                    <label class="label_number_input" for="constante2">Constante 2:</label>
+                    <input id="constante2" type="number" placeholder="input" value="6" min="0">
+                </div>
+
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="lin_layer_output">Valor a aplicar capa lineal: </label>
+                <textarea pattern="^[01]+$" name="lin_layer_output" id="lin_layer_output"  placeholder="Introduce una cadena binaria y pulse el botón de aplicar para obtener un resultado" >1000000001000000000011000000011000000000000000000000000000000000</textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="explain explain_round_functions" id="prueba_funcion_ronda_ascon">
+        <h2>Función de ronda personalizable</h2>
+        <p>En esta sección se permite modificar todos los valores de la función de ronda para así hacer pruebas y experimentar. <strong>Debe colocar un estado interno de 320 bits en la entrada de texto para poder aplicar la función de ronda.</strong></p>
+    </section>
+
+    <section class="container" id="prueba_funcion_ronda_ascon_código">
+        <h2>Prueba la función de ronda de Ascon</h2>
+        <div class="container_content">
+            <div class="container_values">
+                <div id="funcion_de_ronda_num_rondas">
+                    <label class="label_number_input" for="round_number">Número de rondas:</label>
+                    <input id="round_number" type="number" placeholder="input" value="12" max="12" min="0">
+                    <button class="encrypt-button" id="encrypt-button" onclick="round_function_demonstration()">Aplicar función de ronda</button>
+                </div>
+                <div style="text-align: center;align-items: center; justify-content: center;">
+                    <h2 style="text-align: center;font-size: 2rem">Valores constantes</h2>
+                    <button class="encrypt-button" id="activar-desactivar-cons-layer" onclick="actv_or_desc_consts_layer()">Desactivar</button>
+                </div>
+                <div class="container_wrapper" id="constants-layer">
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_0">Ronda 0:</label>
+                        <input class="sbox_input" id="cons_0" type="text" inputmode="numeric" placeholder="input" value="240" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_1">Ronda 1:</label>
+                        <input class="sbox_input" id="cons_1" type="text" inputmode="numeric" placeholder="input" value="225" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_2">Ronda 2:</label>
+                        <input class="sbox_input" id="cons_2" type="text" inputmode="numeric" placeholder="input" value="210" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_3">Ronda 3:</label>
+                        <input class="sbox_input" id="cons_3" type="text" inputmode="numeric" placeholder="input" value="195" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_4">Ronda 4:</label>
+                        <input class="sbox_input" id="cons_4" type="text" inputmode="numeric" placeholder="input" value="180" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_5">Ronda 5:</label>
+                        <input class="sbox_input" id="cons_5" type="text" inputmode="numeric" placeholder="input" value="165" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_6">Ronda 6:</label>
+                        <input class="sbox_input" id="cons_6" type="text" inputmode="numeric" placeholder="input" value="150" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_7">Ronda 7:</label>
+                        <input class="sbox_input" id="cons_7" type="text" inputmode="numeric" placeholder="input" value="135" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_8">Ronda 8:</label>
+                        <input class="sbox_input" id="cons_8" type="text" inputmode="numeric" placeholder="input" value="120" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_9">Ronda 9:</label>
+                        <input class="sbox_input" id="cons_9" type="text" inputmode="numeric" placeholder="input" value="105" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_10">Ronda 10:</label>
+                        <input class="sbox_input" id="cons_10" type="text" inputmode="numeric" placeholder="input" value="90" min="0" max="18446744073709551616">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="cons_11">Ronda 11:</label>
+                        <input class="sbox_input" id="cons_11" type="text" inputmode="numeric" placeholder="input" value="75" min="0" max="18446744073709551616">
+                    </div>
+                </div>
+                <div style="text-align: center;align-items: center; justify-content: center;">
+                    <h2 style="text-align: center;font-size: 2rem;">Valores S-box</h2>
+                    <button class="encrypt-button" id="activar-desactivar-sbox-layer" onclick="actv_or_desc_sbox_layer()">Desactivar</button>
+                </div>
+                <div class="container_wrapper" id="sbox-layer">
+                    <div>
+                        <label class="label_number_input_small" for="sbox_0">0:</label>
+                        <input class="sbox_input" id="sbox_0" type="text" inputmode="numeric" placeholder="input" value="4" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_1">1:</label>
+                        <input class="sbox_input" id="sbox_1" type="text" inputmode="numeric" placeholder="input" value="11" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_2">2:</label>
+                        <input class="sbox_input" id="sbox_2" type="text" inputmode="numeric" placeholder="input" value="31" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_3">3:</label>
+                        <input class="sbox_input" id="sbox_3" type="text" inputmode="numeric" placeholder="input" value="20" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_4">4:</label>
+                        <input class="sbox_input" id="sbox_4" type="text" inputmode="numeric" placeholder="input" value="26" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_5">5:</label>
+                        <input class="sbox_input" id="sbox_5" type="text" inputmode="numeric" placeholder="input" value="21" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_6">6:</label>
+                        <input class="sbox_input" id="sbox_6" type="text" inputmode="numeric" placeholder="input" value="9" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_7">7:</label>
+                        <input class="sbox_input" id="sbox_7" type="text" inputmode="numeric" placeholder="input" value="2" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_8">8:</label>
+                        <input class="sbox_input" id="sbox_8" type="text" inputmode="numeric" placeholder="input" value="27" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_9">9:</label>
+                        <input class="sbox_input" id="sbox_9" type="text" inputmode="numeric" placeholder="input" value="5" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_10">10:</label>
+                        <input class="sbox_input" id="sbox_10" type="text" inputmode="numeric" placeholder="input" value="8" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_11">11:</label>
+                        <input class="sbox_input" id="sbox_11" type="text" inputmode="numeric" placeholder="input" value="18" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_12">12:</label>
+                        <input class="sbox_input" id="sbox_12" type="text" inputmode="numeric" placeholder="input" value="29" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_13">13:</label>
+                        <input class="sbox_input" id="sbox_13" type="text" inputmode="numeric" placeholder="input" value="3" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_14">14:</label>
+                        <input class="sbox_input" id="sbox_14" type="text" inputmode="numeric" placeholder="input" value="6" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_15">15:</label>
+                        <input class="sbox_input" id="sbox_15" type="text" inputmode="numeric" placeholder="input" value="28" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_16">16:</label>
+                        <input class="sbox_input" id="sbox_16" type="text" inputmode="numeric" placeholder="input" value="30" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_17">17:</label>
+                        <input class="sbox_input" id="sbox_17" type="text" inputmode="numeric" placeholder="input" value="19" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_18">18:</label>
+                        <input class="sbox_input" id="sbox_18" type="text" inputmode="numeric" placeholder="input" value="7" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_19">19:</label>
+                        <input class="sbox_input" id="sbox_19" type="text" inputmode="numeric" placeholder="input" value="14" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_20">20:</label>
+                        <input class="sbox_input" id="sbox_20" type="text" inputmode="numeric" placeholder="input" value="0" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_21">21:</label>
+                        <input class="sbox_input" id="sbox_21" type="text" inputmode="numeric" placeholder="input" value="13" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_22">22:</label>
+                        <input class="sbox_input" id="sbox_22" type="text" inputmode="numeric" placeholder="input" value="17" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_23">23:</label>
+                        <input class="sbox_input" id="sbox_23" type="text" inputmode="numeric" placeholder="input" value="24" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_24">24:</label>
+                        <input class="sbox_input" id="sbox_24" type="text" inputmode="numeric" placeholder="input" value="16" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_25">25:</label>
+                        <input class="sbox_input" id="sbox_25" type="text" inputmode="numeric" placeholder="input" value="12" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_26">26:</label>
+                        <input class="sbox_input" id="sbox_26" type="text" inputmode="numeric" placeholder="input" value="1" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_27">27:</label>
+                        <input class="sbox_input" id="sbox_27" type="text" inputmode="numeric" placeholder="input" value="25" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_28">28:</label>
+                        <input class="sbox_input" id="sbox_28" type="text" inputmode="numeric" placeholder="input" value="22" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_29">29:</label>
+                        <input class="sbox_input" id="sbox_29" type="text" inputmode="numeric" placeholder="input" value="10" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_30">30:</label>
+                        <input class="sbox_input" id="sbox_30" type="text" inputmode="numeric" placeholder="input" value="15" min="0" max="32">
+                    </div>
+                    <div>
+                        <label class="label_number_input_small" for="sbox_31">31:</label>
+                        <input class="sbox_input" id="sbox_31" type="text" inputmode="numeric" placeholder="input" value="23" min="0" max="32">
+                    </div>
+                </div>
+                <div style="text-align: center;align-items: center; justify-content: center;">
+                    <h2 style="text-align: center;font-size: 2rem;">Valores capa lineal</h2>
+                    <button class="encrypt-button" id="activar-desactivar-lin-layer" onclick="actv_or_desc_lin_layer()">Desactivar</button>
+                </div>
+                <div class="container_wrapper" id="lin-layer">
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_0">Valor 1 para S0:</label>
+                        <input class="sbox_input" id="lin_cons_0" type="text" inputmode="numeric" placeholder="input" value="19" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_1">Valor 2 para S0:</label>
+                        <input class="sbox_input" id="lin_cons_1" type="text" inputmode="numeric" placeholder="input" value="28" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_2">Valor 1 para S1:</label>
+                        <input class="sbox_input" id="lin_cons_2" type="text" inputmode="numeric" placeholder="input" value="61" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_3">Valor 2 para S1:</label>
+                        <input class="sbox_input" id="lin_cons_3" type="text" inputmode="numeric" placeholder="input" value="39" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_4">Valor 1 para S2:</label>
+                        <input class="sbox_input" id="lin_cons_4" type="text" inputmode="numeric" placeholder="input" value="1" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_5">Valor 2 para S2:</label>
+                        <input class="sbox_input" id="lin_cons_5" type="text" inputmode="numeric" placeholder="input" value="6" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_6">Valor 1 para S3:</label>
+                        <input class="sbox_input" id="lin_cons_6" type="text" inputmode="numeric" placeholder="input" value="10" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_7">Valor 2 para S3:</label>
+                        <input class="sbox_input" id="lin_cons_7" type="text" inputmode="numeric" placeholder="input" value="17" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_8">Valor 1 para S4:</label>
+                        <input class="sbox_input" id="lin_cons_8" type="text" inputmode="numeric" placeholder="input" value="7" min="0">
+                    </div>
+                    <div class="container_wrapper_div_larger">
+                        <label class="container_label" for="lin_cons_9">Valor 2 para S4:</label>
+                        <input class="sbox_input" id="lin_cons_9" type="text" inputmode="numeric" placeholder="input" value="41" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="encrypted">
+                <label class="container_label" for="internal_state_output_round_function">Resultado: </label>
+                <textarea name="internal_state_output_round_function" id="internal_state_output_round_function"  placeholder="Introduce una cadena binaria de 320 bits y pulse el botón de aplicar para obtener un resultado" pattern="^[01]{320}$">11100111110100111101111000000000110011000111000111001001010110110000010101100100101110110011101110000110000010101000001100110010110001010010101000010010110001000011101110101110110110011011101011000011001011001011111001101000110100111010011001000010100001100110011101101000111111001100101111111110101001001111000111001110</textarea>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
