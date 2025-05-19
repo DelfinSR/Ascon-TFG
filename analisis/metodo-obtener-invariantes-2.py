@@ -1,4 +1,4 @@
-from util import hadamard_list, get_P_loops, calculate_power_u_and_do_and, sbox_array, get_results_of_AFN, calculate_power_u_and_xor_numbers, calc_AFN, print_AFN, check_if_is_invariant, get_results_of_AFN_input_sbox, get_results_of_AFN
+from util import *
 import numpy as np
 from sage.all import Matrix, QQ
 
